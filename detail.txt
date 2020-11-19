@@ -1,0 +1,22 @@
+I want to get these 255 k records
+
+and these fields
+
+1- Photo/video url
+2- User name
+3- User profile URL
+4- Product(s) names
+5- Product(s) URLs
+6- Comment
+7- Product brand
+8- The user's image
+9- The user's location
+10- Rating (if not too compliated)
+11- Video or picture
+12- intro at the user profile (if not too complicated)
+
+https://www.influenster.com/reviews/search?sort=prod_media
+
+https://drive.google.com/file/d/1Sxzi-U6YxfkghCzx2aEsnkUvCV9o7OEY/view?usp=sharing
+
+

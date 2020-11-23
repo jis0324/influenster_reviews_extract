@@ -1,10 +1,8 @@
 {
     "categories": [
-        "https://www.influenster.com/reviews/makeup",
-        "https://www.influenster.com/reviews/skin-care",
-        "https://www.influenster.com/reviews/hair-care",
-        "https://www.influenster.com/reviews/perfume-cologne",
-        "https://www.influenster.com/reviews/nail-care"
+        "https://www.influenster.com/reviews/hair-care"
     ],
-    "sleep_value": 5
+    "sleep_value": 2,
+    "user_intro_flag": false,
+    "limit_review_count": 5
 }

@@ -53,7 +53,7 @@ class InfluensterCrawler:
         # get config
         self.config = json.load(open(base_dir + "/config.json",))
         if "sleep_value" not in self.config:
-            self.config["sleep_value"] = 5
+            self.config["sleep_value"] = 2
         print(json.dumps(self.config, indent=4))
 
     # scroll down
@@ -158,7 +158,7 @@ class InfluensterCrawler:
                                 while True:
                                     WebDriverWait(self.driver, 120).until(lambda driver: driver.find_elements_by_xpath("//div[@class='list']/div[contains(@class, 'item')]/div[1]"))
                                     self.driver.implicitly_wait(10)
-                                    time.sleep(self.config["sleep_value"] / 2)
+                                    time.sleep(self.config["sleep_value"])
                                     review_elements = WebDriverWait(self.driver, 120).until(lambda driver: driver.find_elements_by_xpath("//div[@class='list']/div[contains(@class, 'item')]/div[1]"))
                                     new_review_elements = review_elements[self.processed_count:]
                                     print("Found {} / {} New Review Elements.".format(len(new_review_elements), len(review_elements)))
@@ -166,159 +166,169 @@ class InfluensterCrawler:
                                     for element in new_review_elements:
                                         try:
                                             self.processed_count += 1
-                                            
-                                            if not self.accepted_cookie_flag:
-                                                try:
-                                                    accept_cookie_btn = self.driver.find_element_by_xpath("//button[@id='onetrust-accept-btn-handler']")
-                                                    if accept_cookie_btn:
-                                                        accept_cookie_btn.click()
-                                                        print("Accepted Cookie.")
-                                                        self.driver.implicitly_wait(3)
-                                                        time.sleep(self.config["sleep_value"] / 2)
-                                                        self.accepted_cookie_flag = True
-                                                except:
-                                                    pass
-                                            
-                                            record = product.copy()
-                                            try:
-                                                element.click()
-                                                print("Clicked {}th Review Element.".format(self.processed_count))
 
-                                            except:
-                                                time.sleep(self.config["sleep_value"] / 4)
-                                                pass
+                                            if self.processed_count > self.config["limit_review_count"]:
+                                                break
+                                            else:
 
-                                            user_name_ele = WebDriverWait(self.driver, 120).until(lambda driver: driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[2]/div/div[1]/a[@href]"))
-                                            self.driver.implicitly_wait(5)
-                                            time.sleep(self.config["sleep_value"] / 2)
-
-                                            try:
-                                                record["user_name"] = user_name_ele.text
-                                            except:
-                                                record["user_name"] = ""
-                                            
-                                            try:
-                                                record["user_url"] = user_name_ele.get_attribute("href")
-                                            except:
-                                                record["user_url"] = ""
-                                            
-                                            try:
-                                                record["comment"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[2]/div[last()]/div[2]").text
-                                            except:
-                                                record["comment"] = ""
-                                            
-                                            try:
-                                                record["user_img"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[2]/a//img").get_attribute("src")
-                                            except:
-                                                record["user_img"] = ""
-                                        
-                                            try:
-                                                rating_class_list = ["gRUygt", "MVvhW", "bDvYHg", "iibyyi", "dQneJo", "cXTpuH", "NgMdV", "eegwjt", "NTulO", "fBLuLO", "eSuKgz", "gEfMYN", "eBQXmq"]
-
-                                                rating_class_vs_value = {
-                                                    "gRUygt": 1,
-                                                    "MVvhW": 0.6,
-                                                    "iibyyi": 0.6,
-                                                    "cXTpuH": 0.6,
-                                                    "NgMdV": 0.6,
-                                                    "bDvYHg": 0.4,
-                                                    "dQneJo": 0.4,
-                                                    "gEfMYN": 0.4,
-                                                    "eSuKgz": 0.3,
-                                                    "NTulO": 0.2,
-                                                    "eegwjt": 0.1,
-                                                    "fBLuLO": 0,
-                                                    "eBQXmq": 0
-
-                                                }
-                                                rating = 0
-                                                rating_elements = self.driver.find_elements_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[2]/div[3]/div[1]/div")
-                                                if len(rating_elements):
-                                                    for item in rating_elements:
-                                                        classes = item.get_attribute("class")
-                                                        for class_item in rating_class_list:
-                                                            if class_item in classes:
-                                                                if class_item in rating_class_vs_value:
-                                                                    rating += rating_class_vs_value[class_item]
-                                                                else:
-                                                                    rating += 1
-                                                                break
+                                                if not self.accepted_cookie_flag:
+                                                    try:
+                                                        accept_cookie_btn = self.driver.find_element_by_xpath("//button[@id='onetrust-accept-btn-handler']")
+                                                        if accept_cookie_btn:
+                                                            accept_cookie_btn.click()
+                                                            print("Accepted Cookie.")
+                                                            self.driver.implicitly_wait(3)
+                                                            time.sleep(self.config["sleep_value"])
+                                                            self.accepted_cookie_flag = True
+                                                    except:
+                                                        pass
                                                 
-                                                    record["rating"] = rating
-                                            except:
-                                                pass
-                                            
-                                            try:
-                                                record["img_url"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[1]//img").get_attribute("src")
-                                            except:
-                                                record["img_url"] = ""
-
-                                            try:
-                                                record["video_url"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[1]//div[contains(@class, 'jwplayer')]").get_attribute("id").strip()
-                                            except:
-                                                record["video_url"] = ""
-
-                                            try:
-                                                if record["video_url"]:
-                                                    record["video_or_photo"] = "video"
-                                                elif record["img_url"]:
-                                                    record["video_or_photo"] = "photo"
-                                                else:
-                                                    record["video_or_photo"] = ""
-                                            except:
-                                                record["video_or_photo"] = ""
-                                            
-                                            try:
-                                                record["post_url"] = self.driver.current_url
-                                            except:
-                                                record["post_url"] = ""
-
-                                            try:
-                                                record["user_location"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[2]/div/div[last()]").text.split("-", 1)[0]
-                                                if "review" in record["user_location"]:
-                                                    record["user_location"] == ""
-                                            except:
-                                                record["user_location"] = ""
-                                            
-                                            record["user_intro"] = ""
-                                            if record["user_url"]:
+                                                record = product.copy()
                                                 try:
-                                                    user_driver = None
-                                                    user_driver = set_driver("user")
-                                                    user_driver.get(record["user_url"])
-                                                    about_ele = WebDriverWait(user_driver, 120).until(lambda driver: driver.find_element_by_xpath("//div[@class='about']"))
-                                                    record["user_intro"] = about_ele.text
+                                                    element.click()
+                                                    print("Clicked {}th Review Element.".format(self.processed_count))
+
+                                                except:
+                                                    time.sleep(self.config["sleep_value"] / 4)
+                                                    pass
+
+                                                user_name_ele = WebDriverWait(self.driver, 120).until(lambda driver: driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[2]/div/div[1]/a[@href]"))
+                                                self.driver.implicitly_wait(5)
+                                                time.sleep(self.config["sleep_value"])
+
+                                                try:
+                                                    record["user_name"] = user_name_ele.text
+                                                except:
+                                                    record["user_name"] = ""
+                                                
+                                                try:
+                                                    record["user_url"] = user_name_ele.get_attribute("href")
+                                                except:
+                                                    record["user_url"] = ""
+                                                
+                                                try:
+                                                    record["comment"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[2]/div[last()]/div[last()]").text
+                                                except:
+                                                    record["comment"] = ""
+                                                
+                                                try:
+                                                    record["user_img"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[2]/a//img").get_attribute("src")
+                                                except:
+                                                    record["user_img"] = ""
+                                            
+                                                try:
+                                                    rating_class_list = ["gRUygt", "MVvhW", "bDvYHg", "iibyyi", "dQneJo", "cXTpuH", "NgMdV", "eegwjt", "NTulO", "fBLuLO", "eSuKgz", "gEfMYN", "eBQXmq"]
+
+                                                    rating_class_vs_value = {
+                                                        "gRUygt": 1,
+                                                        "MVvhW": 0.6,
+                                                        "iibyyi": 0.6,
+                                                        "cXTpuH": 0.6,
+                                                        "NgMdV": 0.6,
+                                                        "bDvYHg": 0.4,
+                                                        "dQneJo": 0.4,
+                                                        "gEfMYN": 0.4,
+                                                        "eSuKgz": 0.3,
+                                                        "NTulO": 0.2,
+                                                        "eegwjt": 0.1,
+                                                        "fBLuLO": 0,
+                                                        "eBQXmq": 0
+
+                                                    }
+                                                    rating = 0
+                                                    rating_elements = self.driver.find_elements_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[2]/div[3]/div[1]/div")
+                                                    if len(rating_elements):
+                                                        for item in rating_elements:
+                                                            classes = item.get_attribute("class")
+                                                            for class_item in rating_class_list:
+                                                                if class_item in classes:
+                                                                    if class_item in rating_class_vs_value:
+                                                                        rating += rating_class_vs_value[class_item]
+                                                                    else:
+                                                                        rating += 1
+                                                                    break
+                                                    
+                                                        record["rating"] = rating
                                                 except:
                                                     pass
-                                                finally:
-                                                    if user_driver is not None:
-                                                        user_driver.quit()
+                                                
+                                                try:
+                                                    record["img_url"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[1]//img").get_attribute("src")
+                                                except:
+                                                    record["img_url"] = ""
 
-                                            try:
-                                                close_btn = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[1]/a/*[name()='svg']")
-                                                close_btn.click()
-                                                self.driver.implicitly_wait(2)
-                                                time.sleep(self.config["sleep_value"] / 4)
-                                            except:
-                                                next_btn = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/*[name()='svg']")
-                                                next_btn.click()
-                                                self.driver.implicitly_wait(2)
-                                                time.sleep(self.config["sleep_value"] / 4)
+                                                try:
+                                                    record["video_url"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[3]/div[1]//div[contains(@class, 'jwplayer')]").get_attribute("id").strip()
+                                                except:
+                                                    record["video_url"] = ""
 
-                                            print("----------------------")
-                                            print(json.dumps(record, indent=4))
+                                                try:
+                                                    if record["video_url"]:
+                                                        record["video_or_photo"] = "video"
+                                                    elif record["img_url"]:
+                                                        record["video_or_photo"] = "photo"
+                                                    else:
+                                                        record["video_or_photo"] = ""
+                                                except:
+                                                    record["video_or_photo"] = ""
+                                                
+                                                try:
+                                                    record["post_url"] = self.driver.current_url
+                                                except:
+                                                    record["post_url"] = ""
 
-                                            file_exist = os.path.exists(output_csv_path)
-                                            with open(output_csv_path, "a", encoding="utf-8", errors="ignore", newline="") as f:
-                                                fieldnames = ['user_name', 'user_url', 'user_intro', 'product_name', 'product_url', 'comment', 'product_brand', 'user_img', 'user_location', 'rating', 'img_url', 'video_url', 'video_or_photo', 'post_url']
-                                                writer = csv.DictWriter(f, fieldnames=fieldnames)
-                                                if not file_exist:
-                                                    writer.writeheader()
-                                                writer.writerow(record)
+                                                try:
+                                                    record["user_location"] = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[2]/div/div[last()]").text.split("-", 1)[0]
+                                                    if "review" in record["user_location"]:
+                                                        record["user_location"] == ""
+                                                except:
+                                                    record["user_location"] = ""
+                                                
+                                                record["user_intro"] = ""
+                                                if self.config["user_intro_flag"]:
+                                                    if record["user_url"]:
+                                                        try:
+                                                            user_driver = None
+                                                            user_driver = set_driver("user")
+                                                            user_driver.get(record["user_url"])
+                                                            about_ele = WebDriverWait(user_driver, 120).until(lambda driver: driver.find_element_by_xpath("//div[@class='about']"))
+                                                            record["user_intro"] = about_ele.text
+                                                        except:
+                                                            pass
+                                                        finally:
+                                                            if user_driver is not None:
+                                                                user_driver.quit()
+
+                                                try:
+                                                    close_btn = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/div[1]/a/*[name()='svg']")
+                                                    close_btn.click()
+                                                    self.driver.implicitly_wait(2)
+                                                    time.sleep(self.config["sleep_value"] / 2)
+                                                except:
+                                                    next_btn = self.driver.find_element_by_xpath("//div[contains(@class, 'ReactModal__Content')]/div/*[name()='svg']")
+                                                    next_btn.click()
+                                                    self.driver.implicitly_wait(2)
+                                                    time.sleep(self.config["sleep_value"] / 2)
+
+                                                print("----------------------")
+                                                print(json.dumps(record, indent=4))
+
+                                                file_exist = os.path.exists(output_csv_path)
+                                                with open(output_csv_path, "a", encoding="utf-8", errors="ignore", newline="") as f:
+                                                    fieldnames = ['user_name', 'user_url', 'user_intro', 'product_name', 'product_url', 'comment', 'product_brand', 'user_img', 'user_location', 'rating', 'img_url', 'video_url', 'video_or_photo', 'post_url']
+                                                    writer = csv.DictWriter(f, fieldnames=fieldnames)
+                                                    if not file_exist:
+                                                        writer.writeheader()
+                                                    writer.writerow(record)
+                                            
                                         except:
                                             print(traceback.print_exc())
-                                            time.sleep(self.config["sleep_value"] / 2)
+                                            time.sleep(self.config["sleep_value"])
                                             continue
+                                    
+                                            
+                                    if self.processed_count > self.config["limit_review_count"]:
+                                        break
                                     
                                     self.scroll_event()
                             except:

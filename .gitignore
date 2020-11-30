@@ -2,3 +2,6 @@ chromedriver.exe
 ./influenster
 *.csv
 influenster/*
+debug.log
+geckodriver.exe
+geckodriver.log

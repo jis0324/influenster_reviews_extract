@@ -11,6 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.remote_connection import LOGGER
+from selenium.webdriver.chrome.service import Service
 
 LOGGER.setLevel(logging.WARNING)
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,26 +19,32 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 
 def set_driver(arg):
     try:
-        user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                'Chrome/80.0.3987.132 Safari/537.36'
-        chrome_option = webdriver.ChromeOptions()
-        # chrome_option.add_argument('--headless')
-        # chrome_option.add_argument("--start-maximized")
-        chrome_option.add_argument('--no-sandbox')
-        chrome_option.add_argument('--disable-dev-shm-usage')
-        chrome_option.add_argument('--ignore-certificate-errors')
-        chrome_option.add_argument("--disable-blink-features=AutomationControlled")
-        chrome_option.add_argument(f'user-agent={user_agent}')
+        # user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) ' \
+        #         'Chrome/80.0.3987.132 Safari/537.36'
+        # chrome_options = webdriver.ChromeOptions()
+        # chrome_options.add_argument('headless')
+        # chrome_options.add_argument("--start-maximized")
+        # chrome_options.add_argument('--no-sandbox')
+        # chrome_options.add_argument('--disable-dev-shm-usage')
+        # chrome_options.add_argument('--ignore-certificate-errors')
+        # chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        # chrome_options.add_argument(f'user-agent={user_agent}')
 
-        if arg in ["category", "product"]:
-            pass
-        else:
-            chrome_option.headless = True
-            
-        driver = webdriver.Chrome(options=chrome_option)
+        # if arg in ["category", "product"]:
+        #     pass
+        # else:
+        #     chrome_options.add_argument('--headless')
+
+        # experimentalFlags = ['same-site-by-default-cookies@1','cookies-without-same-site-must-be-secure@1']
+        # chromeLocalStatePrefs = { 'browser.enabled_labs_experiments' : experimentalFlags}
+        # chrome_options.add_experimental_option('localState',chromeLocalStatePrefs)
+        # chrome_options.add_argument('--headless')
+        driver = webdriver.Chrome(options=chrome_options)
+        
         return driver
 
     except:
+        print(traceback.print_exc())
         return None
 
 
@@ -57,7 +64,7 @@ class InfluensterCrawler:
         print(json.dumps(self.config, indent=4))
 
     # scroll down
-    def scroll_event(self):
+    def scroll_event(self): 
         try:
             # page height before scroll down
             before_height = self.driver.execute_script("return document.body.scrollHeight")
@@ -104,7 +111,7 @@ class InfluensterCrawler:
 
                 # get inventory url
                 self.driver.get(category_url)
-                amount_ele = WebDriverWait(self.driver, 120).until(lambda driver: driver.find_element_by_xpath("//div[@class='column-results-title']/h2/strong[1]"))
+                amount_ele = WebDriverWait(self.driver, 1200).until(lambda driver: driver.find_element_by_xpath("//div[@class='column-results-title']/h2/strong[1]"))
                 amount = re.search(r'^\d+', amount_ele.text).group()
                 page_count = int(int(amount) / 18) + 1
                 print("----- Found {} products, and {} listing pages From '{}' Category Page".format(amount, page_count, category_url.rsplit("/", 1)[1]))
